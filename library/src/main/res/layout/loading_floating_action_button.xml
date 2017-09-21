@@ -9,12 +9,12 @@
         android:layout_centerInParent="true"
         android:clickable="true"
         android:clipToPadding="false"
-        app:fabSize="normal"
+        app:fabSize="mini"
         app:srcCompat="?attr/colorPrimaryDark" />
 
     <ProgressBar
         android:id="@+id/fab_progress"
-        style="?android:attr/progressBarStyleLarge"
+        style="?android:attr/progressBarStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"

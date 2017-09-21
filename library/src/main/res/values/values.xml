@@ -10,6 +10,10 @@
     <declare-styleable name="LoadingFloatingActionButton">
         <attr name="src" format="reference" />
         <attr name="backgroundColor" format="color" />
+        <attr name="loadingFabSize">
+            <enum name="normal" value="0" />
+            <enum name="mini" value="1" />
+        </attr>
     </declare-styleable>
 
 </resources>

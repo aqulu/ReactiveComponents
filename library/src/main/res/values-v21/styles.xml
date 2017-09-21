@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="ProgressBar.Normal" parent="android:Widget.Material.ProgressBar.Large">
+        <item name="android:minWidth">76dip</item>
+        <item name="android:maxWidth">76dip</item>
+        <item name="android:minHeight">76dip</item>
+        <item name="android:maxHeight">76dip</item>
+    </style>
+
+    <style name="ProgressBar.Mini" parent="android:Widget.Material.ProgressBar.Small">
+        <item name="android:minWidth">54dip</item>
+        <item name="android:maxWidth">54dip</item>
+        <item name="android:minHeight">54dip</item>
+        <item name="android:maxHeight">54dip</item>
+    </style>
+</resources>
