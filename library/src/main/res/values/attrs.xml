@@ -7,4 +7,9 @@
         <attr name="autoShowProgress" format="boolean" />
     </declare-styleable>
 
+    <declare-styleable name="LoadingFloatingActionButton">
+        <attr name="src" format="reference" />
+        <attr name="backgroundColor" format="color" />
+    </declare-styleable>
+
 </resources>
