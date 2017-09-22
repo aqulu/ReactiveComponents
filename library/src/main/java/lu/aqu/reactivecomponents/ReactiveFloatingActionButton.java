@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.util.AttributeSet;
@@ -15,23 +14,18 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-public class LoadingFloatingActionButton extends RelativeLayout {
+public class ReactiveFloatingActionButton extends RelativeLayout implements ReactiveComponent {
 
     private FloatingActionButton mFab;
     private ProgressBar mProgressBar;
 
+    private boolean mDisabledWhileLoading;
+    private boolean mClickableWhileLoading;
+
     public static final int SIZE_MINI = FloatingActionButton.SIZE_MINI;
     public static final int SIZE_NORMAL = FloatingActionButton.SIZE_NORMAL;
 
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({SIZE_MINI, SIZE_NORMAL})
-    public @interface Size {
-    }
-
-    public LoadingFloatingActionButton(Context context, @Nullable AttributeSet attrs) {
+    public ReactiveFloatingActionButton(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         setClipChildren(false);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -39,21 +33,25 @@ public class LoadingFloatingActionButton extends RelativeLayout {
         mFab = new FloatingActionButton(context);
 
         TypedArray a = context.getTheme()
-                .obtainStyledAttributes(attrs, R.styleable.LoadingFloatingActionButton, 0, 0);
+                .obtainStyledAttributes(attrs, R.styleable.ReactiveFloatingActionButton, 0, 0);
         try {
+            mClickableWhileLoading = a
+                    .getBoolean(R.styleable.ReactiveFloatingActionButton_clickableWhileLoading, false);
+            mDisabledWhileLoading = a
+                    .getBoolean(R.styleable.ReactiveFloatingActionButton_disabledWhileLoading, false);
 
-            if (a.hasValue(R.styleable.LoadingFloatingActionButton_backgroundColor)) {
-                int background = a.getColor(R.styleable.LoadingFloatingActionButton_backgroundColor,
+            if (a.hasValue(R.styleable.ReactiveFloatingActionButton_backgroundColor)) {
+                int background = a.getColor(R.styleable.ReactiveFloatingActionButton_backgroundColor,
                         getPrimaryDarkColor(context));
                 mFab.setBackgroundTintList(ColorStateList.valueOf(background));
             }
 
-            if (a.hasValue(R.styleable.LoadingFloatingActionButton_src)) {
-                Drawable drawable = a.getDrawable(R.styleable.LoadingFloatingActionButton_src);
+            if (a.hasValue(R.styleable.ReactiveFloatingActionButton_src)) {
+                Drawable drawable = a.getDrawable(R.styleable.ReactiveFloatingActionButton_src);
                 mFab.setImageDrawable(drawable);
             }
 
-            int size = a.getInt(R.styleable.LoadingFloatingActionButton_loadingFabSize, FloatingActionButton.SIZE_NORMAL);
+            int size = a.getInt(R.styleable.ReactiveFloatingActionButton_loadingFabSize, SIZE_NORMAL);
             if (size == SIZE_MINI) {
                 mProgressBar = (ProgressBar) inflater.inflate(R.layout.progress_bar_mini, null);
             } else {
@@ -90,6 +88,16 @@ public class LoadingFloatingActionButton extends RelativeLayout {
     }
 
     @Override
+    public void onLoadingStart() {
+        setIsLoading(true);
+    }
+
+    @Override
+    public void onLoadingFinished() {
+        setIsLoading(false);
+    }
+
+    @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         mFab.setEnabled(enabled);
@@ -102,11 +110,13 @@ public class LoadingFloatingActionButton extends RelativeLayout {
         mFab.setClickable(enabled);
     }
 
-    public void showProgress() {
-        mProgressBar.setVisibility(VISIBLE);
-    }
+    public void setIsLoading(boolean loading) {
+        mProgressBar.setVisibility((loading) ? VISIBLE : INVISIBLE);
 
-    public void hideProgress() {
-        mProgressBar.setVisibility(INVISIBLE);
+        if (mDisabledWhileLoading) {
+            setEnabled(!loading);
+        } else if (!mClickableWhileLoading) {
+            setClickable(!loading);
+        }
     }
 }

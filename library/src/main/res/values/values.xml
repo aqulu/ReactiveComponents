@@ -7,9 +7,11 @@
         <attr name="autoShowProgress" format="boolean" />
     </declare-styleable>
 
-    <declare-styleable name="LoadingFloatingActionButton">
+    <declare-styleable name="ReactiveFloatingActionButton">
         <attr name="src" format="reference" />
         <attr name="backgroundColor" format="color" />
+        <attr name="disabledWhileLoading" format="boolean" />
+        <attr name="clickableWhileLoading" format="boolean" />
         <attr name="loadingFabSize">
             <enum name="normal" value="0" />
             <enum name="mini" value="1" />
