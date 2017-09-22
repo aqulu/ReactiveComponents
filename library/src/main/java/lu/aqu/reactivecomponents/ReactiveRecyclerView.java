@@ -16,10 +16,12 @@ import android.widget.TextView;
  * <p>
  * if an adapter has been set the view will either display the emptyView (if set) or the list itself, if itemCount > 0
  */
-public class ReactiveRecyclerView extends RecyclerView {
+public class ReactiveRecyclerView extends RecyclerView implements ReactiveComponent {
 
     private View mEmptyView;
     private View mProgressView;
+    private boolean mAutoShowProgress;
+    private boolean mAutoHideProgress;
 
     private Adapter mItemAdapter;
 
@@ -39,21 +41,24 @@ public class ReactiveRecyclerView extends RecyclerView {
 
         TextView emptyView = new TextView(getContext());
         try {
-            if (a.getBoolean(R.styleable.ReactiveRecyclerView_autoShowProgress, true)) {
-                showProgressView();
-            }
-
             emptyView.setText(a.getString(R.styleable.ReactiveRecyclerView_emptyText));
             if (a.hasValue(R.styleable.ReactiveRecyclerView_emptyTextSize)) {
                 int textSize = a.getDimensionPixelSize(R.styleable.ReactiveRecyclerView_emptyTextSize,
                         (int) emptyView.getTextSize());
                 emptyView.setTextSize(textSize);
             }
+
+            mAutoShowProgress = a.getBoolean(R.styleable.ReactiveRecyclerView_autoShowProgress, true);
+            mAutoHideProgress = a.getBoolean(R.styleable.ReactiveRecyclerView_autoHideProgress, true);
         } finally {
             a.recycle();
         }
 
         mEmptyView = emptyView;
+
+        if (mAutoShowProgress) {
+            showProgressView();
+        }
     }
 
     @Override
@@ -64,29 +69,24 @@ public class ReactiveRecyclerView extends RecyclerView {
             mItemAdapter.registerAdapterDataObserver(new AdapterDataObserver() {
                 @Override
                 public void onChanged() {
-                    toggleAdapters();
+                    showItemView();
                 }
 
                 @Override
                 public void onItemRangeInserted(int positionStart, int itemCount) {
-                    toggleAdapters();
+                    showItemView();
                 }
 
                 @Override
                 public void onItemRangeRemoved(int positionStart, int itemCount) {
-                    toggleAdapters();
+                    showItemView();
                 }
             });
-
-            toggleAdapters();
         }
-    }
 
-    /**
-     * shows the progressview (if LayoutManager has been set for this RecyclerView instance)
-     */
-    public void showProgressView() {
-        super.setAdapter(new SingleViewAdapter(mProgressView));
+        if (mAutoHideProgress) {
+            showItemView();
+        }
     }
 
     /**
@@ -113,15 +113,48 @@ public class ReactiveRecyclerView extends RecyclerView {
     public void setEmptyView(@NonNull View emptyView) {
         mEmptyView = emptyView;
         if (hasAdapter()) {
-            toggleAdapters();
+            showItemView();
         }
     }
 
-    private void toggleAdapters() {
+    /**
+     * shows items from user-set adapter (if adapater was set and count > 0) or
+     * otherwise the emptyview associated with this instance
+     */
+    private void showItemView() {
         if (mItemAdapter != null && mItemAdapter.getItemCount() > 0) {
             super.setAdapter(mItemAdapter);
         } else {
             super.setAdapter(new SingleViewAdapter(mEmptyView));
+        }
+    }
+
+    /**
+     * shows the progressview (if LayoutManager has been set for this RecyclerView instance)
+     */
+    private void showProgressView() {
+        super.setAdapter(new SingleViewAdapter(mProgressView));
+    }
+
+    @Override
+    public void onLoadingStart() {
+        if (mAutoShowProgress) {
+            setIsLoading(true);
+        }
+    }
+
+    @Override
+    public void onLoadingFinished() {
+        if (mAutoHideProgress) {
+            setIsLoading(false);
+        }
+    }
+
+    public void setIsLoading(boolean loading) {
+        if (loading) {
+            showProgressView();
+        } else {
+            showItemView();
         }
     }
 

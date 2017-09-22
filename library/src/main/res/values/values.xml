@@ -5,6 +5,7 @@
         <attr name="emptyText" format="string" />
         <attr name="emptyTextSize" format="dimension" />
         <attr name="autoShowProgress" format="boolean" />
+        <attr name="autoHideProgress" format="boolean" />
     </declare-styleable>
 
     <declare-styleable name="ReactiveFloatingActionButton">
@@ -12,6 +13,7 @@
         <attr name="backgroundColor" format="color" />
         <attr name="disabledWhileLoading" format="boolean" />
         <attr name="clickableWhileLoading" format="boolean" />
+
         <attr name="loadingFabSize">
             <enum name="normal" value="0" />
             <enum name="mini" value="1" />
