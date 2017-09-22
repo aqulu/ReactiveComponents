@@ -161,6 +161,14 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         }
     }
 
+    public void setAutoShowProgress(boolean autoShowProgress) {
+        mAutoShowProgress = autoShowProgress;
+    }
+
+    public void setAutoHideProgress(boolean autoHideProgress) {
+        mAutoHideProgress = autoHideProgress;
+    }
+
     private static class SingleViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private View view;
 

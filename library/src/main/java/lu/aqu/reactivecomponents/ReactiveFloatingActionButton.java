@@ -120,4 +120,12 @@ public class ReactiveFloatingActionButton extends RelativeLayout implements Reac
             setClickable(!loading);
         }
     }
+
+    public void setClickableWhileLoading(boolean clickable) {
+        mClickableWhileLoading = clickable;
+    }
+
+    public void setDisabledWhileLoading(boolean disabled) {
+        mDisabledWhileLoading = disabled;
+    }
 }
