@@ -152,6 +152,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         }
     }
 
+    @Override
     public void setIsLoading(boolean loading) {
         if (loading) {
             showProgressView();

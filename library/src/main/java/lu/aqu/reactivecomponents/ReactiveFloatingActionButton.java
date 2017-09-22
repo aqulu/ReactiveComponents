@@ -110,6 +110,7 @@ public class ReactiveFloatingActionButton extends RelativeLayout implements Reac
         mFab.setClickable(enabled);
     }
 
+    @Override
     public void setIsLoading(boolean loading) {
         mProgressBar.setVisibility((loading) ? VISIBLE : INVISIBLE);
 
