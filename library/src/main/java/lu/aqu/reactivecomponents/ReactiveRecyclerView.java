@@ -216,8 +216,8 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         public RecyclerView.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
             // nest inside container to not change the received layout
             final RelativeLayout container = new RelativeLayout(parent.getContext());
-            container.setMinimumHeight(parent.getHeight());
-            container.setMinimumWidth(parent.getWidth());
+            container.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
 
             if (view.getParent() != null && view.getParent() instanceof ViewGroup) {
                 ((ViewGroup) view.getParent()).removeView(view);
