@@ -70,9 +70,9 @@ __FloatingActionButton:__
 
 ```
 
-The floating action button's loading state can either manually be controlled by invoking "fab.setIsLoading(true)" or tied into an RxJava / Retrofit request.
+The floating action button's loading state can either manually be controlled by invoking "fab.setIsLoading(true)" or tied into the RxJava / Retrofit request lifecycle.
 
-Whether or not the button shall be clickable during the loading state can be adjusted with the XML tag "app:clickableWhileLoading". The default value of this settings is "false" (button is not clickable while loading). 
+Whether or not the button shall be clickable during the loading state can be adjusted with the XML tag "app:clickableWhileLoading". The default value of this setting is "false" (button is not clickable while loading). 
 
 
 Download
