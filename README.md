@@ -45,8 +45,8 @@ service.getHouses()
 
 ```
 
-Per default, the recyclerview will switch from loadingstate to displaying the user supplied adapter (or the empty view) as soon as "setAdapter" is invoked.
-This behavior can be controlled by setting the XML attribute "app:autoShowProgress" to true. The data can be shown by manually invoking "myRecyclerView.setIsLoading(false)" in this case.
+Per default, the recyclerview will switch from loadingstate to displaying the user-supplied adapter (or the empty view) as soon as "setAdapter" is invoked.
+This behavior can be controlled by setting the XML attribute "app:autoShowProgress".
 
 __FloatingActionButton:__
 
@@ -97,7 +97,7 @@ and add the following to your app level's build.gradle dependencies:
 ```groovy
 
 dependencies {
-  compile 'com.github.aqulu:reactive-components:0.0.2'
+  compile 'com.github.aqulu:reactive-components:0.0.3'
 }
 
 ```
