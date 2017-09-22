@@ -5,9 +5,11 @@ import android.content.res.TypedArray;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 /**
@@ -18,8 +20,9 @@ import android.widget.TextView;
  */
 public class ReactiveRecyclerView extends RecyclerView implements ReactiveComponent {
 
-    private View mEmptyView;
-    private View mProgressView;
+    private SingleViewAdapter mEmptyAdapter;
+    private SingleViewAdapter mProgressAdapter;
+
     private boolean mAutoShowProgress;
     private boolean mAutoHideProgress;
 
@@ -37,15 +40,13 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         super(context, attrs, defStyle);
         TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.ReactiveRecyclerView, 0, 0);
 
-        mProgressView = new ProgressBar(getContext(), null, android.R.attr.progressBarStyleLarge);
-
         TextView emptyView = new TextView(getContext());
         try {
             emptyView.setText(a.getString(R.styleable.ReactiveRecyclerView_emptyText));
             if (a.hasValue(R.styleable.ReactiveRecyclerView_emptyTextSize)) {
                 int textSize = a.getDimensionPixelSize(R.styleable.ReactiveRecyclerView_emptyTextSize,
                         (int) emptyView.getTextSize());
-                emptyView.setTextSize(textSize);
+                emptyView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
             }
 
             mAutoShowProgress = a.getBoolean(R.styleable.ReactiveRecyclerView_autoShowProgress, true);
@@ -54,7 +55,8 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
             a.recycle();
         }
 
-        mEmptyView = emptyView;
+        setProgressView(new ProgressBar(getContext(), null, android.R.attr.progressBarStyleLarge));
+        setEmptyView(emptyView);
 
         if (mAutoShowProgress) {
             showProgressView();
@@ -95,7 +97,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
      * @param progressView view to be displayed when no adapter has been asigned yet
      */
     public void setProgressView(@NonNull View progressView) {
-        mProgressView = progressView;
+        mProgressAdapter = new SingleViewAdapter(progressView);
     }
 
     /**
@@ -111,7 +113,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
      * @param emptyView view to be displayed when adapter is empty
      */
     public void setEmptyView(@NonNull View emptyView) {
-        mEmptyView = emptyView;
+        mEmptyAdapter = new SingleViewAdapter(emptyView);
         if (hasAdapter()) {
             showItemView();
         }
@@ -125,7 +127,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         if (mItemAdapter != null && mItemAdapter.getItemCount() > 0) {
             super.setAdapter(mItemAdapter);
         } else {
-            super.setAdapter(new SingleViewAdapter(mEmptyView));
+            super.setAdapter(mEmptyAdapter);
         }
     }
 
@@ -133,7 +135,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
      * shows the progressview (if LayoutManager has been set for this RecyclerView instance)
      */
     private void showProgressView() {
-        super.setAdapter(new SingleViewAdapter(mProgressView));
+        super.setAdapter(mProgressAdapter);
     }
 
     @Override
@@ -167,17 +169,21 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
-            view.post(new Runnable() {
-                @Override
-                public void run() {
-                    // set padding as soon as view can be measured to center inside recyclerview
-                    int paddingVertical = (parent.getHeight() - view.getHeight()) / 2;
-                    int paddingHorizontal = (parent.getWidth() - view.getWidth()) / 2;
-                    view.setPadding(paddingHorizontal, paddingVertical,
-                            paddingHorizontal, paddingVertical);
-                }
-            });
-            return new RecyclerView.ViewHolder(view) {
+            // nest inside container to not change the received layout
+            final RelativeLayout container = new RelativeLayout(parent.getContext());
+            container.setMinimumHeight(parent.getHeight());
+            container.setMinimumWidth(parent.getWidth());
+
+            if (view.getParent() != null && view.getParent() instanceof ViewGroup) {
+                ((ViewGroup) view.getParent()).removeView(view);
+            }
+
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+            container.addView(view, layoutParams);
+
+            return new RecyclerView.ViewHolder(container) {
             };
         }
 
