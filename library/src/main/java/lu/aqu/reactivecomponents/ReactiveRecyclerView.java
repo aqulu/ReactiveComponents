@@ -12,6 +12,8 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 /**
  * RecyclerView supporting loading and empty view state
  * the list is considered as loading, if no adapter has been set yet.
@@ -27,6 +29,8 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
     private boolean mAutoHideProgress;
 
     private Adapter mItemAdapter;
+
+    private ArrayList<ItemDecoration> mItemDecorationCache;
 
     public ReactiveRecyclerView(Context context) {
         this(context, null);
@@ -58,9 +62,26 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         setProgressView(new ProgressBar(getContext(), null, android.R.attr.progressBarStyleLarge));
         setEmptyView(emptyView);
 
+        mItemDecorationCache = new ArrayList<>();
+
         if (mAutoShowProgress) {
             showProgressView();
         }
+    }
+
+    @Override
+    public void addItemDecoration(ItemDecoration decor, int index) {
+        // cache itemdecorations to hide them while single views are displayed
+        if (index < 0) {
+            mItemDecorationCache.add(decor);
+        } else {
+            mItemDecorationCache.add(index, decor);
+        }
+    }
+
+    @Override
+    public Adapter getAdapter() {
+        return mItemAdapter;
     }
 
     @Override
@@ -88,6 +109,18 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
 
         if (mAutoHideProgress) {
             showItemView();
+        }
+    }
+
+    private void showItemDecorations() {
+        for (ItemDecoration decoration : mItemDecorationCache) {
+            super.addItemDecoration(decoration, -1);
+        }
+    }
+
+    private void hideItemDecorations() {
+        for (ItemDecoration decoration : mItemDecorationCache) {
+            removeItemDecoration(decoration);
         }
     }
 
@@ -125,8 +158,10 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
      */
     private void showItemView() {
         if (mItemAdapter != null && mItemAdapter.getItemCount() > 0) {
+            showItemDecorations();
             super.setAdapter(mItemAdapter);
         } else {
+            hideItemDecorations();
             super.setAdapter(mEmptyAdapter);
         }
     }
@@ -135,6 +170,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
      * shows the progressview (if LayoutManager has been set for this RecyclerView instance)
      */
     private void showProgressView() {
+        hideItemDecorations();
         super.setAdapter(mProgressAdapter);
     }
 
