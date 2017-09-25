@@ -3,6 +3,7 @@ package lu.aqu.reactivecomponents;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -30,7 +31,10 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
 
     private Adapter mItemAdapter;
 
+    @Nullable
     private ArrayList<ItemDecoration> mItemDecorationCache;
+    @Nullable
+    private ArrayList<OnScrollListener> mScrollListenerCache;
 
     public ReactiveRecyclerView(Context context) {
         this(context, null);
@@ -62,20 +66,8 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         setProgressView(new ProgressBar(getContext(), null, android.R.attr.progressBarStyleLarge));
         setEmptyView(emptyView);
 
-        mItemDecorationCache = new ArrayList<>();
-
         if (mAutoShowProgress) {
             showProgressView();
-        }
-    }
-
-    @Override
-    public void addItemDecoration(ItemDecoration decor, int index) {
-        // cache itemdecorations to hide them while single views are displayed
-        if (index < 0) {
-            mItemDecorationCache.add(decor);
-        } else {
-            mItemDecorationCache.add(index, decor);
         }
     }
 
@@ -112,16 +104,63 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         }
     }
 
+    @Override
+    public void addItemDecoration(ItemDecoration decor, int index) {
+        if (mItemDecorationCache == null) {
+            mItemDecorationCache = new ArrayList<>();
+        }
+
+        // cache itemdecorations to hide them while single views are displayed
+        if (index < 0) {
+            mItemDecorationCache.add(decor);
+        } else {
+            mItemDecorationCache.add(index, decor);
+        }
+    }
+
     private void showItemDecorations() {
-        for (ItemDecoration decoration : mItemDecorationCache) {
-            super.addItemDecoration(decoration, -1);
+        if (mItemDecorationCache != null) {
+            for (ItemDecoration decoration : mItemDecorationCache) {
+                super.addItemDecoration(decoration, -1);
+            }
         }
     }
 
     private void hideItemDecorations() {
-        for (ItemDecoration decoration : mItemDecorationCache) {
-            removeItemDecoration(decoration);
+        if (mItemDecorationCache != null) {
+            for (ItemDecoration decoration : mItemDecorationCache) {
+                removeItemDecoration(decoration);
+            }
         }
+    }
+
+    @Override
+    public void addOnScrollListener(OnScrollListener listener) {
+        if (mScrollListenerCache == null) {
+            mScrollListenerCache = new ArrayList<>();
+        }
+
+        mScrollListenerCache.add(listener);
+    }
+
+    @Override
+    public void clearOnScrollListeners() {
+        if (mScrollListenerCache != null) {
+            mScrollListenerCache.clear();
+        }
+        super.clearOnScrollListeners();
+    }
+
+    private void attachOnScrollListeners() {
+        if (mScrollListenerCache != null) {
+            for (OnScrollListener listener : mScrollListenerCache) {
+                super.addOnScrollListener(listener);
+            }
+        }
+    }
+
+    private void detachOnScrollListeners() {
+        super.clearOnScrollListeners();
     }
 
     /**
@@ -160,10 +199,12 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         if (mItemAdapter != null && mItemAdapter.getItemCount() > 0) {
             if (super.getAdapter() != mItemAdapter) {
                 showItemDecorations();
+                attachOnScrollListeners();
                 super.setAdapter(mItemAdapter);
             }
         } else {
             hideItemDecorations();
+            detachOnScrollListeners();
             super.setAdapter(mEmptyAdapter);
         }
     }
@@ -173,6 +214,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
      */
     private void showProgressView() {
         hideItemDecorations();
+        detachOnScrollListeners();
         super.setAdapter(mProgressAdapter);
     }
 
