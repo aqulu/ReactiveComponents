@@ -158,8 +158,10 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
      */
     private void showItemView() {
         if (mItemAdapter != null && mItemAdapter.getItemCount() > 0) {
-            showItemDecorations();
-            super.setAdapter(mItemAdapter);
+            if (super.getAdapter() != mItemAdapter) {
+                showItemDecorations();
+                super.setAdapter(mItemAdapter);
+            }
         } else {
             hideItemDecorations();
             super.setAdapter(mEmptyAdapter);
