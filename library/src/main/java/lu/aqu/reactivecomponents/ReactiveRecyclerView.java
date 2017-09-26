@@ -17,9 +17,10 @@ import java.util.ArrayList;
 
 /**
  * RecyclerView supporting loading and empty view state
- * the list is considered as loading, if no adapter has been set yet.
- * <p>
- * if an adapter has been set the view will either display the emptyView (if set) or the list itself, if itemCount > 0
+ * the list is considered to be loading, if no adapter has been set yet
+ * <br>
+ * if an adapter has been set the view will either display the emptyView (if set)
+ * or the list itself, if itemCount > 0
  */
 public class ReactiveRecyclerView extends RecyclerView implements ReactiveComponent {
 
@@ -35,6 +36,8 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
     private ArrayList<ItemDecoration> mItemDecorationCache;
     @Nullable
     private ArrayList<OnScrollListener> mScrollListenerCache;
+    @Nullable
+    private ArrayList<OnItemTouchListener> mItemOnTouchListenerCache;
 
     public ReactiveRecyclerView(Context context) {
         this(context, null);
@@ -104,72 +107,18 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         }
     }
 
-    @Override
-    public void addItemDecoration(ItemDecoration decor, int index) {
-        if (mItemDecorationCache == null) {
-            mItemDecorationCache = new ArrayList<>();
-        }
-
-        // cache itemdecorations to hide them while single views are displayed
-        if (index < 0) {
-            mItemDecorationCache.add(decor);
-        } else {
-            mItemDecorationCache.add(index, decor);
-        }
-    }
-
-    private void showItemDecorations() {
-        if (mItemDecorationCache != null) {
-            for (ItemDecoration decoration : mItemDecorationCache) {
-                super.addItemDecoration(decoration, -1);
-            }
-        }
-    }
-
-    private void hideItemDecorations() {
-        if (mItemDecorationCache != null) {
-            for (ItemDecoration decoration : mItemDecorationCache) {
-                removeItemDecoration(decoration);
-            }
-        }
-    }
-
-    @Override
-    public void addOnScrollListener(OnScrollListener listener) {
-        if (mScrollListenerCache == null) {
-            mScrollListenerCache = new ArrayList<>();
-        }
-
-        mScrollListenerCache.add(listener);
-    }
-
-    @Override
-    public void clearOnScrollListeners() {
-        if (mScrollListenerCache != null) {
-            mScrollListenerCache.clear();
-        }
-        super.clearOnScrollListeners();
-    }
-
-    private void attachOnScrollListeners() {
-        if (mScrollListenerCache != null) {
-            for (OnScrollListener listener : mScrollListenerCache) {
-                super.addOnScrollListener(listener);
-            }
-        }
-    }
-
-    private void detachOnScrollListeners() {
-        super.clearOnScrollListeners();
-    }
-
     /**
      * set the view to display as progress (when no adapter has been set yet)
      *
      * @param progressView view to be displayed when no adapter has been asigned yet
      */
     public void setProgressView(@NonNull View progressView) {
+        boolean redrawRequired = isLoading();
         mProgressAdapter = new SingleViewAdapter(progressView);
+
+        if (redrawRequired) {
+            showProgressView();
+        }
     }
 
     /**
@@ -185,16 +134,13 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
      * @param emptyView view to be displayed when adapter is empty
      */
     public void setEmptyView(@NonNull View emptyView) {
+        boolean redrawRequired = isEmptyViewShowing();
         mEmptyAdapter = new SingleViewAdapter(emptyView);
-        if (hasAdapter()) {
-            showItemView();
+        if (redrawRequired) {
+            super.setAdapter(mEmptyAdapter);
         }
     }
 
-    /**
-     * shows items from user-set adapter (if adapater was set and count > 0) or
-     * otherwise the emptyview associated with this instance
-     */
     private void showItemView() {
         if (mItemAdapter != null && mItemAdapter.getItemCount() > 0) {
             if (super.getAdapter() != mItemAdapter) {
@@ -209,9 +155,6 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         }
     }
 
-    /**
-     * shows the progressview (if LayoutManager has been set for this RecyclerView instance)
-     */
     private void showProgressView() {
         hideItemDecorations();
         detachOnScrollListeners();
@@ -246,14 +189,33 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         return super.getAdapter() == mProgressAdapter;
     }
 
+    /**
+     * @return true if the empty view is showing, false otherwise
+     */
     public boolean isEmptyViewShowing() {
         return super.getAdapter() == mEmptyAdapter;
     }
 
+    private boolean isItemViewShowing() {
+        return mItemAdapter != null && mItemAdapter == super.getAdapter();
+    }
+
+    /**
+     * set whether the progress view shall be automatically shown after <code>onLoadingStarted</code>
+     * has been invoked
+     *
+     * @param autoShowProgress
+     */
     public void setAutoShowProgress(boolean autoShowProgress) {
         mAutoShowProgress = autoShowProgress;
     }
 
+    /**
+     * set whether the progress view shall be hidden after <code>onLoadingFinished</code> has been
+     * invoked or an adapter has been set for this view
+     *
+     * @param autoHideProgress
+     */
     public void setAutoHideProgress(boolean autoHideProgress) {
         mAutoHideProgress = autoHideProgress;
     }
@@ -292,6 +254,127 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         @Override
         public int getItemCount() {
             return 1;
+        }
+    }
+
+    @Override
+    public void addItemDecoration(ItemDecoration decor, int index) {
+        if (mItemDecorationCache == null) {
+            mItemDecorationCache = new ArrayList<>();
+        }
+
+        // cache itemdecorations to hide them while single views are displayed
+        if (index < 0) {
+            mItemDecorationCache.add(decor);
+        } else {
+            mItemDecorationCache.add(index, decor);
+        }
+
+        if (isItemViewShowing()) {
+            // directly add to parent, if itemview is already showing
+            super.addItemDecoration(decor, index);
+        }
+    }
+
+    @Override
+    public void removeItemDecoration(ItemDecoration decor) {
+        if (mItemDecorationCache != null) {
+            mItemDecorationCache.remove(decor);
+        }
+        super.removeItemDecoration(decor);
+    }
+
+    private void showItemDecorations() {
+        if (mItemDecorationCache != null) {
+            for (ItemDecoration decoration : mItemDecorationCache) {
+                super.addItemDecoration(decoration, -1);
+            }
+        }
+    }
+
+    private void hideItemDecorations() {
+        if (mItemDecorationCache != null) {
+            for (ItemDecoration decoration : mItemDecorationCache) {
+                super.removeItemDecoration(decoration);
+            }
+        }
+    }
+
+    @Override
+    public void addOnScrollListener(OnScrollListener listener) {
+        if (mScrollListenerCache == null) {
+            mScrollListenerCache = new ArrayList<>();
+        }
+        mScrollListenerCache.add(listener);
+
+        if (isItemViewShowing()) {
+            // directly add to parent, if itemview is already showing
+            super.addOnScrollListener(listener);
+        }
+    }
+
+    @Override
+    public void clearOnScrollListeners() {
+        if (mScrollListenerCache != null) {
+            mScrollListenerCache.clear();
+        }
+        super.clearOnScrollListeners();
+    }
+
+    @Override
+    public void removeOnScrollListener(OnScrollListener listener) {
+        if (mScrollListenerCache != null) {
+            mScrollListenerCache.remove(listener);
+        }
+        super.removeOnScrollListener(listener);
+    }
+
+    private void attachOnScrollListeners() {
+        if (mScrollListenerCache != null) {
+            for (OnScrollListener listener : mScrollListenerCache) {
+                super.addOnScrollListener(listener);
+            }
+        }
+    }
+
+    private void detachOnScrollListeners() {
+        super.clearOnScrollListeners();
+    }
+
+    @Override
+    public void addOnItemTouchListener(OnItemTouchListener listener) {
+        if (mItemOnTouchListenerCache == null) {
+            mItemOnTouchListenerCache = new ArrayList<>();
+        }
+        mItemOnTouchListenerCache.add(listener);
+
+        if (isItemViewShowing()) {
+            // directly add to parent, if itemview is already showing
+            super.addOnItemTouchListener(listener);
+        }
+    }
+
+    @Override
+    public void removeOnItemTouchListener(OnItemTouchListener listener) {
+        if (mItemOnTouchListenerCache != null) {
+            mItemOnTouchListenerCache.remove(listener);
+        }
+        super.removeOnItemTouchListener(listener);
+    }
+
+    private void attachOnItemTouchListeners() {
+        if (mItemOnTouchListenerCache != null) {
+            for (OnItemTouchListener listener : mItemOnTouchListenerCache) {
+                super.addOnItemTouchListener(listener);
+            }
+        }
+    }
+
+    private void detachOnItemTouchListeners() {
+        if (mItemOnTouchListenerCache != null) {
+            for (OnItemTouchListener listener : mItemOnTouchListenerCache) {
+                super.removeOnItemTouchListener(listener);
+            }
         }
     }
 }

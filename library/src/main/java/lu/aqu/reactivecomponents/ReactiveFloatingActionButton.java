@@ -14,6 +14,9 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+/**
+ * FloatingActionButton featuring loading state
+ */
 public class ReactiveFloatingActionButton extends RelativeLayout implements ReactiveComponent {
 
     private FloatingActionButton mFab;
@@ -140,10 +143,21 @@ public class ReactiveFloatingActionButton extends RelativeLayout implements Reac
         return mProgressBar.getVisibility() == VISIBLE;
     }
 
+    /**
+     * specify whether the component shall be clickable while in loading state (defaults to false)
+     *
+     * @param clickable
+     */
     public void setClickableWhileLoading(boolean clickable) {
         mClickableWhileLoading = clickable;
     }
 
+
+    /**
+     * specify whether the component shall be disabled while loading state is displayed
+     *
+     * @param disabled
+     */
     public void setDisabledWhileLoading(boolean disabled) {
         mDisabledWhileLoading = disabled;
     }

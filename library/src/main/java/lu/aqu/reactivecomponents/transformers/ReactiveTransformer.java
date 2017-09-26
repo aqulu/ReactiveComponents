@@ -12,6 +12,15 @@ import lu.aqu.reactivecomponents.ReactiveComponent;
 
 public class ReactiveTransformer {
 
+    /**
+     * Binds a reactive component to an RxJava Observables lifecycle.<br>
+     * The component will be set to loading in the Observables <code>onSubscribe</code> and
+     * will finish loading in <code>doOnTerminate</code>.
+     *
+     * @param component to be bound to the Observable lifecycle
+     * @param <T>       return type of the Observable
+     * @return ObservableTransformer, which changes the ReactiveComponents loading state
+     */
     public static <T> ObservableTransformer<T, T> bind(@NonNull final ReactiveComponent component) {
         return new ObservableTransformer<T, T>() {
             @Override
