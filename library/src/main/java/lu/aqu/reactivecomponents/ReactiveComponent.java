@@ -7,4 +7,6 @@ public interface ReactiveComponent {
     void onLoadingFinished();
 
     void setIsLoading(boolean loading);
+
+    boolean isLoading();
 }

@@ -25,12 +25,21 @@ public class ReactiveFloatingActionButton extends RelativeLayout implements Reac
     public static final int SIZE_MINI = FloatingActionButton.SIZE_MINI;
     public static final int SIZE_NORMAL = FloatingActionButton.SIZE_NORMAL;
 
+    public ReactiveFloatingActionButton(Context context) {
+        this(context, null);
+    }
+
     public ReactiveFloatingActionButton(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
+    }
+
+    public ReactiveFloatingActionButton(Context context, @Nullable AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+
         setClipChildren(false);
         LayoutInflater inflater = LayoutInflater.from(context);
 
-        mFab = new FloatingActionButton(context);
+        mFab = new FloatingActionButton(context, attrs, defStyle);
 
         TypedArray a = context.getTheme()
                 .obtainStyledAttributes(attrs, R.styleable.ReactiveFloatingActionButton, 0, 0);
@@ -111,6 +120,11 @@ public class ReactiveFloatingActionButton extends RelativeLayout implements Reac
     }
 
     @Override
+    public boolean isClickable() {
+        return mFab.isClickable();
+    }
+
+    @Override
     public void setIsLoading(boolean loading) {
         mProgressBar.setVisibility((loading) ? VISIBLE : INVISIBLE);
 
@@ -119,6 +133,11 @@ public class ReactiveFloatingActionButton extends RelativeLayout implements Reac
         } else if (!mClickableWhileLoading) {
             setClickable(!loading);
         }
+    }
+
+    @Override
+    public boolean isLoading() {
+        return mProgressBar.getVisibility() == VISIBLE;
     }
 
     public void setClickableWhileLoading(boolean clickable) {

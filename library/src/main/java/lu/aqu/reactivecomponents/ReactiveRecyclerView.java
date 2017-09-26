@@ -241,6 +241,15 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         }
     }
 
+    @Override
+    public boolean isLoading() {
+        return super.getAdapter() == mProgressAdapter;
+    }
+
+    public boolean isEmptyViewShowing() {
+        return super.getAdapter() == mEmptyAdapter;
+    }
+
     public void setAutoShowProgress(boolean autoShowProgress) {
         mAutoShowProgress = autoShowProgress;
     }
