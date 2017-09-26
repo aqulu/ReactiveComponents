@@ -102,3 +102,21 @@ dependencies {
 
 ```
 
+
+Showcase
+--------
+
+__Floating Action Button (normal)__
+
+![fab normal](doc/fab_normal.gif)
+
+__Floating Action Button (mini)__
+
+![fab mini](doc/fab_mini.gif)
+
+__Recycler View__
+
+![recyclerview empty](doc/rv_empty.gif)
+
+![recyclerview filled](doc/rv_items.gif)
+
