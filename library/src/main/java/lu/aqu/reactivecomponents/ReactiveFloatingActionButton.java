@@ -24,6 +24,7 @@ public class ReactiveFloatingActionButton extends RelativeLayout implements Reac
 
     private boolean mDisabledWhileLoading;
     private boolean mClickableWhileLoading;
+    private float mDisabledAlpha;
 
     public static final int SIZE_MINI = FloatingActionButton.SIZE_MINI;
     public static final int SIZE_NORMAL = FloatingActionButton.SIZE_NORMAL;
@@ -51,6 +52,7 @@ public class ReactiveFloatingActionButton extends RelativeLayout implements Reac
                     .getBoolean(R.styleable.ReactiveFloatingActionButton_clickableWhileLoading, false);
             mDisabledWhileLoading = a
                     .getBoolean(R.styleable.ReactiveFloatingActionButton_disabledWhileLoading, false);
+            mDisabledAlpha = a.getFloat(R.styleable.ReactiveFloatingActionButton_disabledAlpha, 0.65f);
 
             if (a.hasValue(R.styleable.ReactiveFloatingActionButton_backgroundColor)) {
                 int background = a.getColor(R.styleable.ReactiveFloatingActionButton_backgroundColor,
@@ -113,7 +115,7 @@ public class ReactiveFloatingActionButton extends RelativeLayout implements Reac
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         mFab.setEnabled(enabled);
-        mFab.setAlpha((enabled) ? 1f : 0.65f);
+        mFab.setAlpha((enabled) ? 1f : mDisabledAlpha);
     }
 
     @Override
