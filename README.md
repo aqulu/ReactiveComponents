@@ -45,8 +45,16 @@ service.getHouses()
 
 ```
 
+Options:
+
+| Attribute | Values | Description | Default value |
+| --------- | ------ | ----------- | ------------- |
+| `app:emptyText` | string | text to be displayed, when adapter is empty | none |
+| `app:emptyTextSize` | dimension | the textsize for the empty view | default text size |
+| `app:autoShowProgress` | boolean | whether or not the loading state shall be displayed automatically | true |
+| `app:autoHideProgress` | boolean | whether or not the loading state shall be hidden automatically (after Rx calls and when adapter is set) | true |
+
 Per default, the recyclerview will switch from loadingstate to displaying the user-supplied adapter (or the empty view) as soon as "setAdapter" is invoked.
-This behavior can be controlled by setting the XML attribute "app:autoShowProgress".
 
 __FloatingActionButton:__
 
@@ -69,11 +77,18 @@ __FloatingActionButton:__
     app:src="@drawable/ic_arrow_forward_white_24dp" />
 
 ```
+Options:
+
+| Attribute | Values | Description | Default value |
+| --------- | ------ | ----------- | ------------- |
+| `app:src` | drawable | icon to be displayed in FAB | none |
+| `app:backgroundColor` | color | (single) background color | ?attr/colorPrimaryDark |
+| `app:disabledWhileLoading` | boolean | whether or not the button is disabled while in loading state | false (enabled while loading) |
+| `app:clickableWhileLoading` | boolean | whether or not the button shall be clickable when in loading state | false (not clickable) |
+| `app:disabledAlpha` | float | opacity of the FAB when disabled | 0.65f |
+| `app:loadingFabSize` | mini / normal | the size of the FAB | normal |
 
 The floating action button's loading state can either manually be controlled by invoking "fab.setIsLoading(true)" or tied into the RxJava / Retrofit request lifecycle.
-
-Whether or not the button shall be clickable during the loading state can be adjusted with the XML tag "app:clickableWhileLoading". The default value of this setting is "false" (button is not clickable while loading). 
-
 
 Download
 --------
@@ -97,7 +112,7 @@ and add the following to your app level's build.gradle dependencies:
 ```groovy
 
 dependencies {
-  compile 'com.github.aqulu:reactive-components:0.0.3'
+  compile 'com.github.aqulu:reactive-components:0.0.6'
 }
 
 ```
