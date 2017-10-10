@@ -21,4 +21,10 @@
         </attr>
     </declare-styleable>
 
+    <declare-styleable name="ReactiveGallery">
+        <attr name="indicatorSpacing" format="dimension" />
+        <attr name="indicatorActive" format="reference" />
+        <attr name="indicatorInactive" format="reference" />
+    </declare-styleable>
+
 </resources>
