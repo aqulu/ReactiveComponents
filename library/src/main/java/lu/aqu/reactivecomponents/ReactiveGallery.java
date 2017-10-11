@@ -107,10 +107,22 @@ public class ReactiveGallery extends RelativeLayout {
      *
      * @param url
      */
-    public void addImage(String url) {
+    public void add(String url) {
         if (url != null) {
             mImageAdapter.add(url);
             mIndicators.addDot();
+        }
+    }
+
+    /**
+     * adds image urls to the gallery
+     *
+     * @param urls
+     */
+    public void add(List<String> urls) {
+        if (urls != null) {
+            mImageAdapter.addAll(urls);
+            mIndicators.addDots(urls.size());
         }
     }
 
@@ -147,6 +159,12 @@ public class ReactiveGallery extends RelativeLayout {
         public void add(String url) {
             urls.add(url);
             notifyItemInserted(urls.size());
+        }
+
+        public void addAll(List<String> urls) {
+            final int startPos = this.urls.size();
+            this.urls.addAll(urls);
+            notifyItemRangeInserted(startPos, urls.size());
         }
 
         @Override
@@ -197,13 +215,13 @@ public class ReactiveGallery extends RelativeLayout {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 return getContext().getDrawable(resId);
             } else {
-                return getResources().getDrawable(R.drawable.indicator_inactive);
+                return getResources().getDrawable(resId);
             }
         }
 
         public void addDot() {
             ImageView dot = new ImageView(getContext());
-            dot.setImageResource(R.drawable.indicator_inactive);
+            dot.setImageDrawable(indicatorInactive);
 
             LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
                     LayoutParams.WRAP_CONTENT);
@@ -211,6 +229,12 @@ public class ReactiveGallery extends RelativeLayout {
 
             dots.add(dot);
             addView(dot, params);
+        }
+
+        public void addDots(int count) {
+            for (int i = 0; i < count; i++) {
+                addDot();
+            }
         }
 
         public void setPage(int page) {
