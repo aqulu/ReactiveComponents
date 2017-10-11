@@ -90,6 +90,59 @@ Options:
 
 The floating action button's loading state can either manually be controlled by invoking "fab.setIsLoading(true)" or tied into the RxJava / Retrofit request lifecycle.
 
+
+__Image Gallery:__
+
+```xml
+
+<lu.aqu.reactivecomponents.ReactiveGallery
+    android:id="@+id/gallery"
+    android:layout_width="match_parent"
+    android:layout_height="300dp"
+    app:indicatorActive="@drawable/page_indicator_dots_selected"
+    app:indicatorInactive="@drawable/page_indicator_dots_not_selected" />
+```
+
+Options:
+
+| Attribute | Values | Description | Default value |
+| --------- | ------ | ----------- | ------------- |
+| `app:indicatorSpacing` | dimen | spacing between page indicators | 4dp |
+| `app:indicatorActive` | drawable | indicator for currently active page | circle with 8dp diameter of color ?attr/colorPrimary |
+| `app:indicatorInactive` | drawable | indicator for inactive page | circle with 6dp diameter of color @android:color/darker_gray |
+
+An Image Gallery with lazy loading and left / right swiping support.
+
+To load an image, a ReactiveGallery.ImageLoader instance must be set on the ReactiveGallery instance.
+Example with Glide:
+
+```java
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        ReactiveGallery gallery = (ReactiveGallery) findViewById(R.id.gallery);
+
+        imageSwitcher.setImageLoader(new ReactiveGallery.ImageLoader() {
+            @Override
+            public void loadImage(String url, final ReactiveGallery.LoadingCallback callback) {
+                Glide.with(ExampleActivity.this)
+                        .load(new GlideUrl(url))
+                        .asBitmap()
+                        .centerCrop()
+                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .into(new SimpleTarget<Bitmap>() {
+                            @Override
+                            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                                callback.onLoadFinished(new BitmapDrawable(getResources(), resource));
+                            }
+                        });
+            }
+        });
+   }
+
+```
+
 Download
 --------
 
@@ -112,7 +165,7 @@ and add the following to your app level's build.gradle dependencies:
 ```groovy
 
 dependencies {
-  compile 'com.github.aqulu:reactive-components:0.0.6'
+  compile 'com.github.aqulu:reactive-components:0.0.7'
 }
 
 ```
@@ -134,4 +187,3 @@ __Recycler View__
 ![recyclerview empty](doc/rv_empty.gif)
 
 ![recyclerview filled](doc/rv_items.gif)
-
