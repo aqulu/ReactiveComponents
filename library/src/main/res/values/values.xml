@@ -3,6 +3,7 @@
 
     <declare-styleable name="ReactiveRecyclerView">
         <attr name="emptyText" format="string" />
+        <attr name="emptyDrawable" format="reference" />
         <attr name="emptyTextSize" format="dimension" />
         <attr name="autoShowProgress" format="boolean" />
         <attr name="autoHideProgress" format="boolean" />

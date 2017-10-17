@@ -2,6 +2,7 @@ package lu.aqu.reactivecomponents;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +10,8 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -69,14 +72,15 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         super(context, attrs, defStyle);
         TypedArray a = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.ReactiveRecyclerView, 0, 0);
 
-        TextView emptyView = new TextView(getContext());
+        final String emptyText;
+        final Drawable emptyDrawable;
+        Integer textSize = null;
         try {
-            emptyView.setText(a.getString(R.styleable.ReactiveRecyclerView_emptyText));
+            emptyText = a.getString(R.styleable.ReactiveRecyclerView_emptyText);
             if (a.hasValue(R.styleable.ReactiveRecyclerView_emptyTextSize)) {
-                int textSize = a.getDimensionPixelSize(R.styleable.ReactiveRecyclerView_emptyTextSize,
-                        (int) emptyView.getTextSize());
-                emptyView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+                textSize = a.getDimensionPixelSize(R.styleable.ReactiveRecyclerView_emptyTextSize, -1);
             }
+            emptyDrawable = a.getDrawable(R.styleable.ReactiveRecyclerView_emptyDrawable);
 
             mAutoShowProgress = a.getBoolean(R.styleable.ReactiveRecyclerView_autoShowProgress, true);
             mAutoHideProgress = a.getBoolean(R.styleable.ReactiveRecyclerView_autoHideProgress, true);
@@ -85,7 +89,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         }
 
         setProgressView(new ProgressBar(getContext(), null, android.R.attr.progressBarStyleLarge));
-        setEmptyView(emptyView);
+        setEmptyView(buildEmptyView(emptyDrawable, emptyText, textSize));
 
         if (mAutoShowProgress) {
             showProgressView();
@@ -142,7 +146,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
      */
     private void registerAdapterObserver() {
         if (mItemAdapter != null) {
-            mItemAdapter.unregisterAdapterDataObserver(mAdapterObserver);
+            mItemAdapter.registerAdapterDataObserver(mAdapterObserver);
         }
     }
 
@@ -174,6 +178,30 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
      */
     public boolean hasAdapter() {
         return mItemAdapter != null;
+    }
+
+    private View buildEmptyView(@Nullable Drawable drawable, @Nullable String text, @Nullable Integer textSize) {
+        LinearLayout linearLayout = new LinearLayout(getContext());
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+
+        if (drawable != null) {
+            ImageView imageView = new ImageView(getContext());
+            imageView.setImageDrawable(drawable);
+
+            linearLayout.addView(imageView);
+        }
+
+        if (text != null) {
+            TextView textView = new TextView(getContext());
+            textView.setText(text);
+            if (textSize != null) {
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+            }
+
+            linearLayout.addView(textView);
+        }
+
+        return linearLayout;
     }
 
     /**
