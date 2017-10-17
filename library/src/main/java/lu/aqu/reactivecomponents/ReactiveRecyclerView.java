@@ -31,6 +31,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
     private boolean mAutoHideProgress;
 
     private Adapter mItemAdapter;
+    private boolean mHasFixedSize;
 
     @Nullable
     private ArrayList<ItemDecoration> mItemDecorationCache;
@@ -38,6 +39,23 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
     private ArrayList<OnScrollListener> mScrollListenerCache;
     @Nullable
     private ArrayList<OnItemTouchListener> mItemOnTouchListenerCache;
+
+    private final AdapterDataObserver mAdapterObserver = new AdapterDataObserver() {
+        @Override
+        public void onChanged() {
+            finishLoading();
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            finishLoading();
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount) {
+            finishLoading();
+        }
+    };
 
     public ReactiveRecyclerView(Context context) {
         this(context, null);
@@ -75,35 +93,65 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
     }
 
     @Override
+    public boolean hasFixedSize() {
+        return mHasFixedSize;
+    }
+
+    @Override
+    public void setHasFixedSize(boolean hasFixedSize) {
+        mHasFixedSize = hasFixedSize;
+        if (isItemViewShowing()) {
+            super.setHasFixedSize(hasFixedSize);
+        }
+    }
+
+    @Override
     public Adapter getAdapter() {
         return mItemAdapter;
     }
 
     @Override
     public void setAdapter(Adapter adapter) {
+        unregisterAdapterObserver();
+
         mItemAdapter = adapter;
-
-        if (mItemAdapter != null) {
-            mItemAdapter.registerAdapterDataObserver(new AdapterDataObserver() {
-                @Override
-                public void onChanged() {
-                    showItemView();
-                }
-
-                @Override
-                public void onItemRangeInserted(int positionStart, int itemCount) {
-                    showItemView();
-                }
-
-                @Override
-                public void onItemRangeRemoved(int positionStart, int itemCount) {
-                    showItemView();
-                }
-            });
-        }
+        registerAdapterObserver();
 
         if (mAutoHideProgress) {
-            showItemView();
+            finishLoading();
+        }
+    }
+
+    @Override
+    public void swapAdapter(Adapter adapter, boolean removeAndRecycleExistingViews) {
+        boolean itemViewShowing = isItemViewShowing();
+        unregisterAdapterObserver();
+
+        mItemAdapter = adapter;
+        registerAdapterObserver();
+
+        if (itemViewShowing) {
+            super.swapAdapter(mItemAdapter, removeAndRecycleExistingViews);
+        } else if (mAutoHideProgress) {
+            finishLoading();
+        }
+    }
+
+    /**
+     * registers adapter observer to current mItemAdapter
+     */
+    private void registerAdapterObserver() {
+        if (mItemAdapter != null) {
+            mItemAdapter.unregisterAdapterDataObserver(mAdapterObserver);
+        }
+    }
+
+    /**
+     * unregisters adapter observer from current mItemAdapter
+     */
+    private void unregisterAdapterObserver() {
+        if (mItemAdapter != null) {
+            mItemAdapter.unregisterAdapterDataObserver(mAdapterObserver);
         }
     }
 
@@ -141,24 +189,44 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         }
     }
 
-    private void showItemView() {
+    private void finishLoading() {
         if (mItemAdapter != null && mItemAdapter.getItemCount() > 0) {
-            if (super.getAdapter() != mItemAdapter) {
-                showItemDecorations();
-                attachOnScrollListeners();
-                super.setAdapter(mItemAdapter);
-            }
+            showItemView();
         } else {
-            hideItemDecorations();
-            detachOnScrollListeners();
-            super.setAdapter(mEmptyAdapter);
+            showEmptyView();
         }
     }
 
+    private void showItemView() {
+        if (!isItemViewShowing()) {
+            showItemDecorations();
+            attachOnScrollListeners();
+            attachOnItemTouchListeners();
+            super.setHasFixedSize(mHasFixedSize);
+
+            super.setAdapter(mItemAdapter);
+        }
+    }
+
+    private void showEmptyView() {
+        showSingleView(mEmptyAdapter);
+    }
+
     private void showProgressView() {
+        showSingleView(mProgressAdapter);
+    }
+
+    /**
+     * hides all item view specific listeners and decorations and sets adapter
+     *
+     * @param adapter to show
+     */
+    private void showSingleView(Adapter adapter) {
         hideItemDecorations();
         detachOnScrollListeners();
-        super.setAdapter(mProgressAdapter);
+        detachOnItemTouchListeners();
+        super.setHasFixedSize(false);
+        super.setAdapter(adapter);
     }
 
     @Override
@@ -180,7 +248,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         if (loading) {
             showProgressView();
         } else {
-            showItemView();
+            finishLoading();
         }
     }
 
