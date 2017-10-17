@@ -51,10 +51,12 @@ Options:
 | --------- | ------ | ----------- | ------------- |
 | `app:emptyText` | string | text to be displayed, when adapter is empty | none |
 | `app:emptyTextSize` | dimension | the textsize for the empty view | default text size |
+| `app:emptyDrawable` | drawable | a drawable to be displayed, when adapter is empty | none |
 | `app:autoShowProgress` | boolean | whether or not the loading state shall be displayed automatically | true |
 | `app:autoHideProgress` | boolean | whether or not the loading state shall be hidden automatically (after Rx calls and when adapter is set) | true |
 
 Per default, the recyclerview will switch from loadingstate to displaying the user-supplied adapter (or the empty view) as soon as "setAdapter" is invoked.
+If emptyText and emptyDrawable both are set, the emptyText will be displayed underneath the drawable.
 
 __FloatingActionButton:__
 
@@ -165,7 +167,7 @@ and add the following to your app level's build.gradle dependencies:
 ```groovy
 
 dependencies {
-  compile 'com.github.aqulu:reactive-components:0.0.7'
+  compile 'com.github.aqulu:reactive-components:0.1.0'
 }
 
 ```
