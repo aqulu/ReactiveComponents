@@ -323,8 +323,9 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
             this.view = view;
         }
 
+        @NonNull
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull final ViewGroup parent, int viewType) {
             // nest inside container to not change the received layout
             final RelativeLayout container = new RelativeLayout(parent.getContext());
             container.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -344,7 +345,7 @@ public class ReactiveRecyclerView extends RecyclerView implements ReactiveCompon
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         }
 
         @Override

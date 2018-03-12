@@ -9,6 +9,7 @@
         android:layout_centerInParent="true"
         android:clickable="true"
         android:clipToPadding="false"
+        android:focusable="true"
         app:fabSize="mini"
         app:srcCompat="?attr/colorPrimaryDark" />
 
