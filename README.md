@@ -1,5 +1,5 @@
-Reactive Components (WIP)
-=========================
+Reactive Components
+===================
 
 A collection of components featuring a loading / in progress state. Includes RxJava lifecycle tie-in.
 
@@ -167,7 +167,7 @@ and add the following to your app level's build.gradle dependencies:
 ```groovy
 
 dependencies {
-  compile 'com.github.aqulu:reactive-components:0.1.0'
+  implementation 'com.github.aqulu:reactive-components:0.2.0'
 }
 
 ```
