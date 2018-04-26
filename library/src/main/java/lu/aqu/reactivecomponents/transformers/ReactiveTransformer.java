@@ -28,13 +28,13 @@ public class ReactiveTransformer {
                 return upstream.doOnSubscribe(new Consumer<Disposable>() {
 
                     @Override
-                    public void accept(@NonNull Disposable disposable) throws Exception {
+                    public void accept(@NonNull Disposable disposable) {
                         component.onLoadingStart();
                     }
                 }).doOnTerminate(new Action() {
 
                     @Override
-                    public void run() throws Exception {
+                    public void run() {
                         component.onLoadingFinished();
                     }
                 });
